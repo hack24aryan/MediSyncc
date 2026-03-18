@@ -1,0 +1,881 @@
+<?php include 'db.php'; ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediSyncc | Smart Healthcare Login</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* ================= CSS VARIABLES & THEME ================= */
+        :root {
+            --primary: #0f172a;
+            --accent: #0ea5e9;
+            --accent-hover: #0284c7;
+            --bg: #f4f7fb;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --input-bg: rgba(255, 255, 255, 0.9);
+            --input-border: rgba(15, 23, 42, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            --success: #10b981;
+            --error: #ef4444;
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --primary: #f8fafc;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --bg: #020617;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --card-bg: rgba(15, 23, 42, 0.6);
+            --input-bg: rgba(30, 41, 59, 0.8);
+            --input-border: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        /* ================= GLOBAL STYLES ================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        a {
+            text-decoration: none;
+            color: var(--accent);
+            transition: var(--transition);
+        }
+
+        a:hover {
+            color: var(--accent-hover);
+        }
+
+        /* ================= NAVBAR ================= */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .home-link {
+            color: var(--text-main);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            color: var(--accent);
+        }
+
+        /* ================= LAYOUT ================= */
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+/* Fix for the dropdown appearance */
+select.form-control {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+        /* LEFT SIDE - BRANDING */
+        .brand-side {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 4rem 10%;
+            color: white;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(14, 165, 233, 0.8) 100%),
+                        url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=2000&q=80') center/cover;
+            overflow: hidden;
+        }
+
+        .brand-content {
+            z-index: 10;
+            animation: slideUpFadeIn 1s ease forwards;
+        }
+
+        .brand-side h1 {
+            font-size: 3.5rem;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .brand-side p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2.5rem;
+            max-width: 80%;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .feature-list i {
+            color: #38bdf8;
+            font-size: 1.3rem;
+        }
+
+        /* SVG Heartbeat Animation */
+        .heartbeat-container {
+            margin-top: 3rem;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .heartbeat-path {
+            fill: none;
+            stroke: #38bdf8;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: pulse-line 3s linear infinite;
+            filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.8));
+        }
+
+        /* RIGHT SIDE - FORM */
+        .form-side {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: var(--shadow);
+            animation: slideUpFadeIn 0.8s ease 0.2s forwards;
+            opacity: 0;
+            transform: translateY(20px);
+            position: absolute;
+            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
+        }
+
+        .glass-card.hidden {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-20px);
+            pointer-events: none;
+        }
+
+        .glass-card.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        .form-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .form-header h2 {
+            font-size: 2rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* ================= FORM ELEMENTS ================= */
+        .input-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .input-wrapper .toggle-password {
+            left: auto;
+            right: 1rem;
+            cursor: pointer;
+        }
+
+        .input-wrapper .toggle-password:hover {
+            color: var(--accent);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.9rem 1rem 0.9rem 3rem;
+            border-radius: 12px;
+            border: 2px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+        }
+
+        .form-control:focus + i {
+            color: var(--accent);
+        }
+
+        /* Password Strength */
+        .strength-meter {
+            height: 4px;
+            background: var(--input-border);
+            border-radius: 4px;
+            margin-top: 0.8rem;
+            overflow: hidden;
+            display: none;
+        }
+
+        .strength-bar {
+            height: 100%;
+            width: 0;
+            border-radius: 4px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .strength-text {
+            font-size: 0.8rem;
+            margin-top: 0.4rem;
+            display: none;
+            text-align: right;
+        }
+
+        .options-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            accent-color: var(--accent);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        /* Primary Button */
+        .btn-primary {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px var(--accent);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary.success {
+            background: var(--success);
+            box-shadow: 0 10px 20px -10px var(--success);
+        }
+
+        /* Ripple Effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.5rem 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--input-border);
+        }
+
+        .divider span {
+            padding: 0 1rem;
+        }
+
+        .switch-form {
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+        }
+
+        .switch-form a {
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Footer */
+        .footer {
+            position: absolute;
+            bottom: 1.5rem;
+            text-align: center;
+            width: 100%;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* ================= ANIMATIONS ================= */
+        @keyframes slideUpFadeIn {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse-line {
+            0% { stroke-dashoffset: 1000; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { stroke-dashoffset: 0; opacity: 0; }
+        }
+
+        @keyframes ripple {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        .shake-animation {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* ================= RESPONSIVE ================= */
+        @media (max-width: 992px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+            .brand-side {
+                flex: none;
+                padding: 6rem 5% 4rem;
+                text-align: center;
+            }
+            .brand-side h1 { font-size: 2.5rem; }
+            .brand-side p { max-width: 100%; margin: 0 auto 2rem; }
+            .feature-list { display: inline-block; text-align: left; }
+            .heartbeat-container { margin: 2rem auto 0; }
+            
+            .form-side {
+                padding: 3rem 5% 6rem;
+                min-height: 600px;
+            }
+            body { overflow-y: auto; overflow-x: hidden; }
+            .glass-card { position: relative; margin: 0 auto; }
+            .glass-card.hidden { display: none; }
+            .footer { position: relative; padding-bottom: 2rem; }
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <nav class="navbar">
+         <a href="#" class="logo"><i class="fas fa-pills"></i> MediSyncc</a>
+        <div class="nav-actions">
+            <a href="index.php" class="home-link"><i class="fas fa-home"></i> Back to Home</a>
+            <button class="theme-toggle" id="theme-btn" aria-label="Toggle Dark Mode">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="brand-side">
+            <div class="brand-content">
+                <h1>Welcome Back to<br>MediSyncc</h1>
+                <p>Your intelligent companion for medication adherence and holistic health synchronization.</p>
+                
+                <ul class="feature-list">
+                    <li><i class="fas fa-bell"></i> Smart Medication Alerts</li>
+                    <li><i class="fas fa-user-nurse"></i> Real-time Caregiver Notifications</li>
+                    <li><i class="fas fa-chart-pie"></i> Advanced Health Tracking</li>
+                </ul>
+
+                <div class="heartbeat-container">
+                    <svg viewBox="0 0 500 100">
+                        <path class="heartbeat-path" d="M0,50 L150,50 L170,20 L190,80 L210,50 L300,50 L320,10 L350,90 L380,50 L500,50" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-side">
+            
+            <div class="glass-card active" id="login-card">
+                <div class="form-header">
+                    <h2>Member Login</h2>
+                    <p>Enter your details to access your dashboard.</p>
+                </div>
+                
+                <form id="login-form">
+                    <div class="input-group">
+                        <label for="login-email">Email Address</label>
+                        <div class="input-wrapper">
+                            <input type="email" id="login-email" class="form-control" placeholder="medi.syncc@example.com" required>
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="login-password">Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+                            <i class="fas fa-lock"></i>
+                            <i class="fas fa-eye toggle-password" onclick="togglePassword('login-password', this)"></i>
+                        </div>
+                    </div>
+
+                    <div class="options-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" checked> Remember me
+                        </label>
+                        <a href="#">Forgot Password?</a>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="login-btn">
+                        <span>Sign In</span> <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+
+                <div class="divider"><span>or</span></div>
+
+                <div class="switch-form">
+                    New to MediSyncc? <a onclick="toggleForms()">Create an account</a>
+                </div>
+            </div>
+
+            <div class="glass-card hidden" id="register-card">
+    <div class="form-header">
+        <h2>Create Account</h2>
+        <p>Join MediSyncc to sync your health journey.</p>
+    </div>
+    
+    <form id="register-form">
+        <div class="input-group">
+            <label for="reg-name">Full Name</label>
+            <div class="input-wrapper">
+                <input type="text" id="reg-name" class="form-control" placeholder="Name" required>
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="reg-phone">Phone Number</label>
+            <div class="input-wrapper">
+                <input type="tel" id="reg-phone" class="form-control" placeholder="+91 98765 43210" required>
+                <i class="fas fa-phone"></i>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="reg-gender">Gender</label>
+            <div class="input-wrapper">
+                <select id="reg-gender" class="form-control" style="padding-left: 3rem;" required>
+                    <option value="" disabled selected>Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+                <i class="fas fa-venus-mars"></i>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="reg-email">Email Address</label>
+            <div class="input-wrapper">
+                <input type="email" id="reg-email" class="form-control" placeholder="medi.syncc@example.com" required>
+                <i class="fas fa-envelope"></i>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="reg-password">Password</label>
+            <div class="input-wrapper">
+                <input type="password" id="reg-password" class="form-control" placeholder="Create a strong password" required>
+                <i class="fas fa-lock"></i>
+                <i class="fas fa-eye toggle-password" onclick="togglePassword('reg-password', this)"></i>
+            </div>
+            <div class="strength-meter" id="strength-meter">
+                <div class="strength-bar" id="strength-bar"></div>
+            </div>
+            <div class="strength-text" id="strength-text"></div>
+        </div>
+
+        <button type="submit" class="btn-primary" id="register-btn">
+            <span>Register Account</span> <i class="fas fa-user-plus"></i>
+        </button>
+    </form>
+
+    <div class="switch-form" style="margin-top: 1.5rem;">
+        Already have an account? <a onclick="toggleForms()">Sign In here</a>
+    </div>
+</div>
+
+    <script>
+        // ================= THEME TOGGLE (Dark Mode) =================
+        const themeBtn = document.getElementById('theme-btn');
+        const themeIcon = themeBtn.querySelector('i');
+        const body = document.body;
+
+        // Check local storage for theme
+        const savedTheme = localStorage.getItem('medisyncc-theme');
+        if (savedTheme === 'dark') {
+            body.setAttribute('data-theme', 'dark');
+            themeIcon.classList.replace('fa-moon', 'fa-sun');
+        }
+
+        themeBtn.addEventListener('click', () => {
+            if (body.getAttribute('data-theme') === 'light') {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('medisyncc-theme', 'dark');
+            } else {
+                body.setAttribute('data-theme', 'light');
+                themeIcon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('medisyncc-theme', 'light');
+            }
+        });
+
+        // ================= AUTOFOCUS =================
+        window.onload = () => {
+            document.getElementById('login-email').focus();
+        };
+
+        // ================= TOGGLE LOGIN / REGISTER FORMS =================
+        const loginCard = document.getElementById('login-card');
+        const registerCard = document.getElementById('register-card');
+
+        function toggleForms() {
+            if (loginCard.classList.contains('active')) {
+                loginCard.classList.remove('active');
+                loginCard.classList.add('hidden');
+                
+                setTimeout(() => {
+                    registerCard.classList.remove('hidden');
+                    registerCard.classList.add('active');
+                    document.getElementById('reg-name').focus();
+                }, 300); // Wait for transition
+            } else {
+                registerCard.classList.remove('active');
+                registerCard.classList.add('hidden');
+                
+                setTimeout(() => {
+                    loginCard.classList.remove('hidden');
+                    loginCard.classList.add('active');
+                    document.getElementById('login-email').focus();
+                }, 300);
+            }
+        }
+
+        // ================= SHOW/HIDE PASSWORD =================
+        function togglePassword(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = "password";
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        // ================= PASSWORD STRENGTH CALCULATOR =================
+        const regPassword = document.getElementById('reg-password');
+        const meter = document.getElementById('strength-meter');
+        const bar = document.getElementById('strength-bar');
+        const text = document.getElementById('strength-text');
+
+        regPassword.addEventListener('input', () => {
+            const val = regPassword.value;
+            if (val.length > 0) {
+                meter.style.display = 'block';
+                text.style.display = 'block';
+            } else {
+                meter.style.display = 'none';
+                text.style.display = 'none';
+            }
+
+            let strength = 0;
+            if (val.length >= 8) strength += 1;
+            if (val.match(/[A-Z]/)) strength += 1;
+            if (val.match(/[0-9]/)) strength += 1;
+            if (val.match(/[^a-zA-Z0-9]/)) strength += 1;
+
+            switch(strength) {
+                case 0:
+                case 1:
+                    bar.style.width = '33%';
+                    bar.style.backgroundColor = 'var(--error)';
+                    text.textContent = 'Weak';
+                    text.style.color = 'var(--error)';
+                    break;
+                case 2:
+                case 3:
+                    bar.style.width = '66%';
+                    bar.style.backgroundColor = '#f59e0b'; // Orange
+                    text.textContent = 'Medium';
+                    text.style.color = '#f59e0b';
+                    break;
+                case 4:
+                    bar.style.width = '100%';
+                    bar.style.backgroundColor = 'var(--success)';
+                    text.textContent = 'Strong';
+                    text.style.color = 'var(--success)';
+                    break;
+            }
+        });
+
+        // ================= BUTTON RIPPLE EFFECT =================
+        function createRipple(event, button) {
+            const circle = document.createElement('span');
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+
+            const rect = button.getBoundingClientRect();
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - rect.left - radius}px`;
+            circle.style.top = `${event.clientY - rect.top - radius}px`;
+            circle.classList.add('ripple');
+
+            const existingRipple = button.querySelector('.ripple');
+            if (existingRipple) {
+                existingRipple.remove();
+            }
+
+            button.appendChild(circle);
+        }
+
+      // ================= FORM SUBMISSION HANDLING =================
+        
+        // Update the triggerError function to accept custom messages
+        function triggerError(cardId, message) {
+            const card = document.getElementById(cardId);
+            card.classList.remove('shake-animation');
+            void card.offsetWidth; // trigger reflow
+            card.classList.add('shake-animation');
+            
+            // Optional: You can replace this alert with a custom UI toast notification
+            alert(message); 
+        }
+
+        function triggerSuccess(btnId, message) {
+    const btn = document.getElementById(btnId);
+    const originalHTML = btn.innerHTML;
+    btn.classList.add('success');
+    btn.innerHTML = `<i class="fas fa-check-circle"></i> <span>${message}</span>`;
+    
+    setTimeout(() => {
+        btn.classList.remove('success');
+        btn.innerHTML = originalHTML;
+    }, 3000);
+}
+
+// --- Handle Registration ---
+document.getElementById('register-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('register-btn');
+    createRipple(e, btn);
+
+    const name = document.getElementById('reg-name').value;
+    const email = document.getElementById('reg-email').value;
+    const phone = document.getElementById('reg-phone').value;   // Captured Phone
+    const gender = document.getElementById('reg-gender').value; // Captured Gender
+    const password = document.getElementById('reg-password').value;
+
+    if (password.length < 8) {
+        triggerError('register-card', 'Password must be at least 8 characters.');
+        return;
+    }
+
+    try {
+        const response = await fetch('api_register.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            // ADDED: phone and gender included in the body below
+            body: JSON.stringify({ name, email, phone, gender, password }) 
+        });
+        
+        const result = await response.json();
+
+        if (result.status === "success") {
+            triggerSuccess('register-btn', result.message);
+            document.getElementById('register-form').reset();
+            // Switch to login form after 2 seconds
+            setTimeout(() => toggleForms(), 2000);
+        } else {
+            triggerError('register-card', result.message);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        triggerError('register-card', "Server error. Try again.");
+    }
+});
+
+// --- Handle Login ---
+document.getElementById('login-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('login-btn');
+    createRipple(e, btn);
+
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    try {
+        const response = await fetch('api_login.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const result = await response.json();
+
+        if (result.status === "success") {
+            triggerSuccess('login-btn', result.message);
+            // Redirect to the user dashboard after success
+            setTimeout(() => {
+                window.location.href = 'dashboard.php';
+            }, 1500);
+        } else {
+            triggerError('login-card', result.message);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        triggerError('login-card', "Server error. Try again.");
+    }
+});
+    </script>
+</body>
+</html>
