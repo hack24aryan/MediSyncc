@@ -5,8 +5,8 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // ================= DATABASE CONNECTION =================
 $host = 'localhost';
-$user = 'root';
-$pass = '1234'; // Update with your XAMPP password
+$user = 'Username';
+$pass = 'Password'; // Update with your XAMPP password
 $dbname = 'medisyncc_db';
 
 // Enable error reporting for MySQLi (Best practice for debugging)
