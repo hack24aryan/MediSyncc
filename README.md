@@ -358,7 +358,7 @@ See the [LICENSE](./LICENSE) file for full details.
 
 ---
 
-## 🏷 Suggested GitHub Topics
+##  🏷 Suggested GitHub Topics
 
 ```
 php  mysql  healthcare  medicine-reminder  patient-management
