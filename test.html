@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Doctors - Smart Med</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; padding: 30px 15px; color: #333; background-image: linear-gradient(to right top, #3e7cda, #2c9de2, #58bae1, #90d3e1, #c8e9e8);}
+        
+        .container { max-width: 900px; margin: 0 auto; background-image: linear-gradient(to right top, #3e7cda, #2c9de2, #58bae1, #90d3e1, #c8e9e8);}
+        
+        /* Form Section */
+        .card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 30px; }
+        .card h2 { margin-bottom: 20px; color: #2c3e50; font-size: 22px; border-bottom: 2px solid #3498db; display: inline-block; padding-bottom: 5px; }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px; width: 100%; }
+        input:focus { border-color: #3498db; }
+        
+        .btn-add { background: #27ae60; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; transition: 0.3s; }
+        .btn-add:hover { background: #219150; }
+
+        /* Search & List Section */
+        .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        #doctorSearch { width: 100%; max-width: 300px; margin-bottom: 20px; }
+
+        .doctor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .doctor-card { background: white; padding: 20px; border-radius: 12px; border-left: 5px solid #3498db; position: relative; box-shadow: 0 3px 10px rgba(0,0,0,0.05); }
+        
+        .dr-name { font-size: 18px; font-weight: bold; color: #2c3e50; display: block; margin-bottom: 5px; }
+        .dr-spec { font-size: 13px; color: #3498db; font-weight: 600; text-transform: uppercase; background: #ebf5fb; padding: 2px 8px; border-radius: 4px; }
+        .dr-contact { display: block; margin-top: 10px; font-size: 14px; color: #555; }
+        .dr-clinic { font-size: 14px; color: #7f8c8d; margin-top: 5px; }
+        
+        .btn-delete { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 12px; text-decoration: underline; }
+
+        .empty-state { text-align: center; grid-column: 1 / -1; padding: 40px; color: #7f8c8d; background: #fff; border-radius: 12px; }
+
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h2>👨‍⚕️ Add New Doctor</h2>
+        <div class="form-grid">
+            <input type="text" id="drName" placeholder="Doctor's Name (e.g. Dr. Sharma)">
+            <select id="drSpec">
+                <option value="">Select Specialization</option>
+                <option value="General Physician">General Physician</option>
+                <option value="Cardiologist">Cardiologist</option>
+                <option value="Dentist">Dentist</option>
+                <option value="Pediatrician">Pediatrician</option>
+                <option value="Neurologist">Neurologist</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="text" id="drPhone" placeholder="Phone Number">
+            <input type="text" id="drClinic" placeholder="Clinic/Hospital Name">
+        </div>
+        <button class="btn-add" onclick="addDoctor()">+ Add to Directory</button>
+    </div>
+
+    <div class="list-header">
+        <h2 style="color: #2c3e50;">My Doctors</h2>
+        <input type="text" id="doctorSearch" placeholder="Search by name or specialty..." oninput="renderDoctors()">
+    </div>
+
+    <div class="doctor-grid" id="doctorList">
+        </div>
+</div>
+
+<script>
+    // Initialize Data from LocalStorage
+    let doctors = JSON.parse(localStorage.getItem('myDoctors')) || [
+        { id: 1, name: 'Dr. Sameer Khan', spec: 'Cardiologist', phone: '98765-43210', clinic: 'Heart Care Center' },
+        { id: 2, name: 'Dr. Anjali Mehta', spec: 'Dentist', phone: '91234-56789', clinic: 'City Dental Clinic' }
+    ];
+
+    const listContainer = document.getElementById('doctorList');
+
+    // Render Function
+    function renderDoctors() {
+        const searchTerm = document.getElementById('doctorSearch').value.toLowerCase();
+        listContainer.innerHTML = '';
+
+        const filtered = doctors.filter(dr => 
+            dr.name.toLowerCase().includes(searchTerm) || 
+            dr.spec.toLowerCase().includes(searchTerm)
+        );
+
+        if (filtered.length === 0) {
+            listContainer.innerHTML = '<div class="empty-state">No doctors found. Please add one above.</div>';
+            return;
+        }
+
+        filtered.forEach(dr => {
+            const div = document.createElement('div');
+            div.className = 'doctor-card';
+            div.innerHTML = `
+                <span class="dr-name">${dr.name}</span>
+                <span class="dr-spec">${dr.spec}</span>
+                <span class="dr-contact">📞 ${dr.phone}</span>
+                <p class="dr-clinic">📍 ${dr.clinic}</p>
+                <button class="btn-delete" onclick="deleteDoctor(${dr.id})">Remove</button>
+            `;
+            listContainer.appendChild(div);
+        });
+    }
+
+    // Add Doctor Function
+    function addDoctor() {
+        const name = document.getElementById('drName').value;
+        const spec = document.getElementById('drSpec').value;
+        const phone = document.getElementById('drPhone').value;
+        const clinic = document.getElementById('drClinic').value;
+
+        if (!name || !spec || !phone) {
+            alert("Please fill name, specialization, and phone number.");
+            return;
+        }
+
+        const newDr = {
+            id: Date.now(),
+            name: name,
+            spec: spec,
+            phone: phone,
+            clinic: clinic || 'Private Clinic'
+        };
+
+        doctors.push(newDr);
+        localStorage.setItem('myDoctors', JSON.stringify(doctors));
+        
+        // Reset Inputs
+        document.getElementById('drName').value = '';
+        document.getElementById('drSpec').value = '';
+        document.getElementById('drPhone').value = '';
+        document.getElementById('drClinic').value = '';
+
+        renderDoctors();
+    }
+
+    // Delete Doctor
+    window.deleteDoctor = function(id) {
+        if(confirm("Remove this doctor from your list?")) {
+            doctors = doctors.filter(dr => dr.id !== id);
+            localStorage.setItem('myDoctors', JSON.stringify(doctors));
+            renderDoctors();
+        }
+    }
+
+    // Initial Load
+    renderDoctors();
+</script>
+
+</body>
+</html>

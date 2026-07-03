@@ -1,0 +1,10 @@
+# Environment Config
+.env
+!.env.example
+
+# PHP/Apache Logs
+*.log
+
+# OS Metadata
+.DS_Store
+Thumbs.db
